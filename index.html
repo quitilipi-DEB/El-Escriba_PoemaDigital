@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>El escriba - Poema Digital</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="El escriba – Poema Digital">
+  <meta property="og:description" content="Una experiencia de poesía digital interactiva">
+  <meta property="og:url" content="https://tusitio.com/poema-el-escriba">
+  <style>
+    body { margin:0; padding:2em; font-family:'Georgia', serif; color:#f0f0f0; background:linear-gradient(120deg,#0f0f0f,#1a1a1a); overflow-x:hidden; position:relative; animation:fondoColor 60s infinite; }
+    @keyframes fondoColor { 0%{background-color:#0f0f0f;}50%{background-color:#1c1c2b;}100%{background-color:#0f0f0f;} }
+    body::before { content:""; position:fixed; top:0;left:0;width:100vw;height:100vh; background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.03),transparent 70%),radial-gradient(circle at 70% 70%,rgba(255,255,255,0.02),transparent 70%); animation:moverFondo 40s linear infinite; z-index:-1; }
+    #playBtn, #shareBtn { display:block; margin:1em auto; padding:0.7em 1.5em; font-size:1.2em; background:#444; color:#fff; border:none; border-radius:8px; cursor:pointer; transition: background-color 0.3s; }
+    #playBtn:hover, #shareBtn:hover { background-color: #666; }
+    #poema-container {
+      height: calc(100vh - 180px);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+      padding-top: 2em;
+    }
+    .verso {
+      font-size: 2.0em;
+      line-height: 1.5;
+      text-align: center;
+      margin: 0.8em 0;
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out, transform 0.3s ease-in-out;
+      position: absolute;
+      width: 90%;
+      max-width: 700px;
+      left: 50%;
+      top: 30%;
+      transform: translate(-50%, -50%);
+      text-shadow: 2px 2px 4px #000;
+      font-family: 'Optima', sans-serif;
+      font-weight: bold;
+    }
+    .visible { opacity: 1; }
+    .clicked { text-shadow:0 0 15px #f0f; transform: translate(-50%, -50%) scale(1.08); }
+  
+    #creditos {
+      margin-top: 3em;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      color: #bbbbff;
+    }
+
+    #creditos a {
+      color: #88ccff;
+      text-decoration: none;
+      font-style: italic;
+    }
+
+    #creditos a:hover {
+      text-decoration: underline;
+    }
+  
+    /* Palabras flotantes */
+    .fade-out {
+      opacity: 0;
+      filter: blur(4px);
+      transition: all 2s ease-out;
+    }
+
+    /* Interacción al pasar el mouse o tocar */
+    .verso:hover {
+      color: #ffccff;
+      transform: translate(-50%, -50%) scale(1.05);
+      text-shadow: 0 0 10px #ffccff;
+    }
+
+    /* Verso que se puede arrastrar */
+    .verso.dragging {
+      cursor: move;
+      opacity: 0.7;
+    }
+
+    /* Fondo dinámico por sección */
+    body[data-tema="silencio"] {
+      background: linear-gradient(120deg, #1a1a2f, #2f2f3f);
+    }
+
+    body[data-tema="resistencia"] {
+      background: linear-gradient(120deg, #331a1a, #4f2f2f);
+    }
+
+    body[data-tema="espiritual"] {
+      background: linear-gradient(120deg, #1a331a, #2f4f2f);
+    }
+
+  
+    .letra {
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+  </style>
+</head>
+<body>
+  <canvas id="particles-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;pointer-events:none;"></canvas>
+  <h1 style="text-align:center;">El escriba</h1>
+  <button id="playBtn">Reproducir poema</button>
+  <button id="shareBtn">Compartir poema</button>
+  <div id="creditos">
+    <p class="autor">Autor: Dante Emilio Borelli</p>
+    <p class="blog"><a href="https://deborelli.blogspot.com/" target="_blank">https://deborelli.blogspot.com/</a></p>
+  </div>
+
+  <div id="poema-container">
+    <div class="verso" data-start="0.5" data-end="4.2">el cemento soberbio escribe silencios</div>
+<div class="verso" data-start="4.0" data-end="7.5">cada trazo<br>un decreto persistente</div>
+<div class="verso" data-start="8.0" data-end="10.8">las emociones se agitan</div>
+<div class="verso" data-start="10.2" data-end="14.3">despiertan leyes fosilizadas que refractan voces</div>
+<div class="verso" data-start="14.2" data-end="17.7">la cultura del olvido se erige sanguínea</div>
+<div class="verso" data-start="18.0" data-end="20.9">la plasticidad cerebral se disuelve</div>
+<div class="verso" data-start="20.8" data-end="23.4">pero el verso resiste</div>
+<div class="verso" data-start="23.2" data-end="25.4">ese que no olvida</div>
+<div class="verso" data-start="25.5" data-end="29.1">aunque yo me duerma a la intemperie</div>
+<div class="verso" data-start="29.0" data-end="31.5">sostiene sus promesas</div>
+<div class="verso" data-start="31.8" data-end="34.7">cada cosa dice algo de Dios</div>
+<div class="verso" data-start="34.7" data-end="39.2">la forma en que el sol entra por la hendija de la tarde</div>
+<div class="verso" data-start="39.8" data-end="43.7">el roce leve del agua sobre mi pie cansado</div>
+<div class="verso" data-start="44.0" data-end="46.3">cuando todo calla</div>
+<div class="verso" data-start="46.8" data-end="48.7">te quedás</div>
+<div class="verso" data-start="49.0" data-end="51.3">cuando toda calla</div>
+<div class="verso" data-start="51.5" data-end="55.9">como brisa detenida en la rama que no cae</div>
+<div class="verso" data-start="56.5" data-end="59.5">en cada fulgor la mente se pliega</div>
+<div class="verso" data-start="59.8" data-end="63.6">allí se inscribe el reclamo de los invisibles</div>
+<div class="verso" data-start="63.5" data-end="67.1">las epístolas tenaces de los sin voz</div>
+<div class="verso" data-start="67.5" data-end="70.0">el escriba no escribe</div>
+<div class="verso" data-start="70.0" data-end="72.5">talla el mutismo</div>
+<div class="verso" data-start="72.5" data-end="75.8">con la paciencia del que sabe</div>
+<div class="verso" data-start="75.5" data-end="80.2">que toda palabra pesa más que lo tangible</div>
+<div class="verso" data-start="80.0" data-end="88.0" id="final-silence"></div>
+
+  </div>
+
+  <audio id="audioAmbiente" src="ambient_background.mp3" loop preload="auto"></audio>
+  <audio id="audioVoz" src="escriba_voice.mp3" preload="auto"></audio>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- Selección de Elementos del DOM ---
+      const versos = document.querySelectorAll('.verso');
+      const playBtn = document.getElementById('playBtn');
+      const shareBtn = document.getElementById('shareBtn');
+      const audioAmbiente = document.getElementById('audioAmbiente');
+      const audioVoz = document.getElementById('audioVoz');
+
+      // --- Configuración Inicial de Audio ---
+      audioAmbiente.volume = 0.4;
+      audioVoz.volume = 0.9;
+
+      // --- Lógica de Reproducción/Pausa ---
+      playBtn.addEventListener('click', () => {
+        if (audioVoz.paused) {
+          audioAmbiente.play();
+          audioVoz.play();
+          playBtn.textContent = 'Pausar poema';
+        } else {
+          audioAmbiente.pause();
+          audioVoz.pause();
+          playBtn.textContent = 'Continuar poema';
+        }
+      });
+
+      // --- Lógica de Sincronización de Versos ---
+      // Efecto de cambio de tema según el momento del poema
+      const temas = [
+        { tiempo: 0, tema: "silencio" },
+        { tiempo: 20, tema: "resistencia" },
+        { tiempo: 40, tema: "espiritual" }
+      ];
+
+      audioVoz.addEventListener('timeupdate', () => {
+        const t = audioVoz.currentTime;
+        for (let i = temas.length - 1; i >= 0; i--) {
+          if (t >= temas[i].tiempo) {
+            document.body.setAttribute("data-tema", temas[i].tema);
+            break;
+          }
+        }
+      });
+
+      // Efecto de desvanecimiento de versos anteriores
+      let versoActivo = null;
+      audioVoz.addEventListener('timeupdate', () => {
+        versos.forEach(verso => {
+          const startTime = parseFloat(verso.dataset.start);
+          const endTime = parseFloat(verso.dataset.end);
+          if (audioVoz.currentTime >= startTime && audioVoz.currentTime < endTime) {
+            if (versoActivo && versoActivo !== verso) {
+              versoActivo.classList.add("fade-out");
+            }
+            verso.classList.remove("fade-out");
+            verso.classList.add("visible");
+            versoActivo = verso;
+          } else {
+            verso.classList.remove("visible");
+          }
+        });
+      });
+
+      // Versos arrastrables
+      versos.forEach(verso => {
+        verso.setAttribute("draggable", true);
+        verso.addEventListener("dragstart", e => {
+          verso.classList.add("dragging");
+          e.dataTransfer.setData("text/plain", null);
+        });
+        verso.addEventListener("dragend", () => {
+          verso.classList.remove("dragging");
+        });
+
+        verso.addEventListener("dragover", e => {
+          e.preventDefault();
+        });
+
+        verso.addEventListener("drop", e => {
+          e.preventDefault();
+          const dragging = document.querySelector(".verso.dragging");
+          if (dragging && dragging !== verso) {
+            const container = verso.parentNode;
+            container.insertBefore(dragging, verso.nextSibling);
+          }
+        });
+      });
+
+      audioVoz.addEventListener('timeupdate', () => {
+        const currentTime = audioVoz.currentTime;
+        versos.forEach(verso => {
+          const startTime = parseFloat(verso.dataset.start);
+          const endTime = parseFloat(verso.dataset.end);
+
+          if (currentTime >= startTime && currentTime < endTime) {
+            verso.classList.add('visible');
+          } else {
+            verso.classList.remove('visible');
+          }
+        });
+      });
+
+      // --- Lógica de Fin de Reproducción ---
+      audioVoz.addEventListener('ended', () => {
+        audioAmbiente.pause();
+        audioAmbiente.currentTime = 0;
+        playBtn.textContent = 'Reproducir de nuevo';
+      });
+
+      // --- Interactividad de Versos ---
+      // Escritura animada letra por letra
+      versos.forEach(verso => {
+        const texto = verso.innerHTML;
+        const palabras = texto.split(/(<br\s*\/?>)/g);
+        let resultado = '';
+        palabras.forEach(palabra => {
+          if (palabra.startsWith('<br')) {
+            resultado += palabra;
+          } else {
+            const letras = palabra.split('').map(l => `<span class="letra">${l}</span>`).join('');
+            resultado += letras;
+          }
+        });
+        verso.innerHTML = resultado;
+      });
+
+      // Mostrar letras según el tiempo
+      audioVoz.addEventListener('timeupdate', () => {
+  versos.forEach(verso => {
+    const start = parseFloat(verso.dataset.start);
+    const end = parseFloat(verso.dataset.end) + 0.5; // margen extra
+    if (audioVoz.currentTime >= start && audioVoz.currentTime < end) {
+      const letras = verso.querySelectorAll('.letra');
+      const tiempoTotal = end - start;
+      const tiempoPorLetra = 0.05; // más rápido
+      const rel = audioVoz.currentTime - start;
+      const mostrar = Math.floor(rel / tiempoPorLetra);
+      letras.forEach((letra, i) => letra.style.opacity = i <= mostrar ? '1' : '0');
+    }
+  });
+});
+
+
+      // Partículas/chispas
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.vx = (Math.random() - 0.5) * 0.5;
+          this.vy = Math.random() * 0.5 + 0.2;
+          this.size = Math.random() * 2;
+          this.alpha = Math.random() * 0.5 + 0.3;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.y > canvas.height) this.reset();
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+          ctx.fillStyle = `rgba(255, 200, 100, ${this.alpha})`;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < 120; i++) {
+        particles.push(new Particle());
+      }
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let p of particles) {
+          p.update();
+          p.draw();
+        }
+        requestAnimationFrame(animateParticles);
+      }
+
+      animateParticles();
+
+      versos.forEach(v => v.addEventListener('click', () => v.classList.toggle('clicked')));
+
+      // --- Lógica para Compartir ---
+      shareBtn.addEventListener('click', async () => {
+        const shareData = {
+          title: 'El escriba – Poema Digital',
+          text: 'Una experiencia de poesía digital interactiva',
+          url: window.location.href
+        };
+        try {
+          if (navigator.share) {
+            await navigator.share(shareData);
+          } else {
+            await navigator.clipboard.writeText(window.location.href);
+            alert('¡Enlace del poema copiado al portapapeles!');
+          }
+        } catch (err) {
+          console.error('Error al compartir:', err);
+        }
+      });
+    });
+  </script>
+
+  <img src="4.webp"
+     alt="Escultura El escriba"
+     style="position:fixed;bottom:20px;right:20px;width:120px;opacity:0.15;z-index:-1;pointer-events:none;">
+
+
+</body>
+</html>
